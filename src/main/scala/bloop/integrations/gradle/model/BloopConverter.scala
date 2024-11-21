@@ -404,7 +404,7 @@ class BloopConverter(parameters: BloopParameters, buildProjectsInfo: BuildProjec
         bloopProject = Config.Project(
           name = projectName,
           directory = project.getProjectDir.toPath,
-          workspaceDir = Option(project.getRootProject.workspacePath),
+          workspaceDir = Option(buildProjectsInfo.workspacePath),
           sources = sources,
           sourcesGlobs = None,
           sourceRoots = None,
@@ -858,8 +858,7 @@ class BloopConverter(parameters: BloopParameters, buildProjectsInfo: BuildProjec
     }
 
     // Need to namespace only those projects that can run bloop. Others would not cause collision.
-    val allProjects = buildProjectsInfo.allBloopProjects
-    val projectsWithSameName = allProjects.filter(_.getName == project.getName)
+    val projectsWithSameName = buildProjectsInfo.bloopProjectByName.getOrElse(project.getName , Nil)
 
     val uniqueProjectName =
       if (projectsWithSameName.size == 1) project.getName
@@ -877,7 +876,7 @@ class BloopConverter(parameters: BloopParameters, buildProjectsInfo: BuildProjec
       // has the suffix caused a clash - no nice way to resolve so just apply a numbered suffix
       var usedName = fullName
       var i = 2
-      while (allProjects.exists(_.getName == usedName)) {
+      while (buildProjectsInfo.bloopProjectByName.isDefinedAt(usedName)) {
         usedName = s"$fullName-$i"
         i = i + 1
       }

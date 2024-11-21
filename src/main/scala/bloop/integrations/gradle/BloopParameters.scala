@@ -1,13 +1,13 @@
 package bloop.integrations.gradle
 
 import java.io.File
-
 import bloop.integrations.gradle.syntax._
-
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
+
+import java.nio.file.Path
 
 /**
  * Project extension to configure Bloop.
@@ -58,9 +58,8 @@ case class BloopParametersExtension(project: Project) {
   @Input @Optional def getIncludeJavadoc: Property[java.lang.Boolean] =
     includeJavadoc_
 
-  def createParameters: BloopParameters = {
-    val defaultTargetDir =
-      project.getRootProject.workspacePath.resolve(".bloop").toFile
+  def createParameters(workspacePath: Path): BloopParameters = {
+    val defaultTargetDir = workspacePath.resolve(".bloop").toFile
     BloopParameters(
       targetDir_.getOrElse(defaultTargetDir),
       Option(compilerName_.getOrNull),

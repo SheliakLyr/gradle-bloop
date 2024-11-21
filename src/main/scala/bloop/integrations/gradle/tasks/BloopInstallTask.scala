@@ -44,7 +44,8 @@ class BloopInstallTask extends DefaultTask with PluginUtils with TaskLogging {
   }
 
   def runBloopPlugin(): Unit = {
-    val parameters = extension.createParameters
+    val collected = BuildProjectsInfo.collect(project)
+    val parameters = extension.createParameters(collected.workspacePath)
     val converter = new BloopConverter(parameters, BuildProjectsInfo.collect(project))
     val targetDir: File = parameters.targetDir
     info(s"Generating Bloop configuration to ${targetDir.getAbsolutePath}")

@@ -93,28 +93,6 @@ object syntax {
     def getExtension[T](implicit t: ClassTag[T]): T = {
       project.getExtensions.getByType(t.runtimeClass.asInstanceOf[Class[T]])
     }
-
-    private def getCommonRootPath(path1: Path, path2: Path): Path = {
-      var idx = 0
-      var finished = false
-      while (!finished) {
-        if (
-          idx < path1.getNameCount() && idx < path2.getNameCount() && path1
-            .getName(idx) == path2
-            .getName(idx)
-        )
-          idx = idx + 1
-        else
-          finished = true
-      }
-      path1.getRoot().resolve(path1.subpath(0, idx))
-    }
-
-    def workspacePath: Path = {
-      project.getAllprojects.asScala
-        .map(_.getProjectDir().toPath())
-        .foldLeft(project.getRootDir().toPath())(getCommonRootPath)
-    }
   }
 
   /**
