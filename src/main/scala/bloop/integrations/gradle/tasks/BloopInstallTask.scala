@@ -3,15 +3,12 @@ package bloop.integrations.gradle.tasks
 import java.io.File
 import java.nio.file.FileAlreadyExistsException
 import java.nio.file.Files
-
 import scala.collection.JavaConverters._
 import scala.util.Failure
 import scala.util.Success
-
 import bloop.integrations.gradle.BloopParametersExtension
-import bloop.integrations.gradle.model.BloopConverter
+import bloop.integrations.gradle.model.{BloopConverter, BuildProjectsInfo}
 import bloop.integrations.gradle.syntax._
-
 import com.android.build.gradle.api.BaseVariant
 import com.android.builder.model.SourceProvider
 import org.gradle.api.DefaultTask
@@ -48,7 +45,7 @@ class BloopInstallTask extends DefaultTask with PluginUtils with TaskLogging {
 
   def runBloopPlugin(): Unit = {
     val parameters = extension.createParameters
-    val converter = new BloopConverter(parameters)
+    val converter = new BloopConverter(parameters, BuildProjectsInfo.collect(project))
     val targetDir: File = parameters.targetDir
     info(s"Generating Bloop configuration to ${targetDir.getAbsolutePath}")
 

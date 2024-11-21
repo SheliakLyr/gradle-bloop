@@ -69,7 +69,7 @@ import org.gradle.plugins.ide.internal.tooling.java.DefaultInstalledJdk
  * @param parameters
  *   Plugin input parameters
  */
-class BloopConverter(parameters: BloopParameters) {
+class BloopConverter(parameters: BloopParameters, buildProjectsInfo: BuildProjectsInfo) {
 
   def toBloopConfig(
       projectName: String,
@@ -485,7 +485,7 @@ class BloopConverter(parameters: BloopParameters) {
   private def getSourceSetProjectMap(
       rootProject: Project
   ): Map[SourceSet, Project] = {
-    getAllBloopCapableProjects(rootProject)
+    buildProjectsInfo.allBloopProjects
       .flatMap(p => p.allSourceSets.map(_ -> p))
       .toMap
   }
@@ -576,7 +576,7 @@ class BloopConverter(parameters: BloopParameters) {
       sourceSets: Set[SourceSet]
   ): Map[File, SourceSet] = {
     val archiveSourceSets = for {
-      project <- rootProject.getAllprojects.asScala
+      project <- buildProjectsInfo.allProjects
       archiveTask <- tasksWithType(project, classOf[AbstractArchiveTask])
       sourcePathObj <- getSourcePaths(archiveTask.getRootSpec())
       sourcePath <- sourceSets.find(_.getOutput == sourcePathObj)
@@ -611,7 +611,7 @@ class BloopConverter(parameters: BloopParameters) {
       rootProject: Project
   ): Map[SourceProvider, (Project, BaseVariant)] = {
     (for {
-      project <- rootProject.getAllprojects.asScala
+      project <- buildProjectsInfo.allProjects
       nonTestVariant <- project.androidVariants
       variant <- nonTestVariant :: Option(nonTestVariant.getTestVariant).toList
       sourceSet <- variant.getSourceSets.asScala
@@ -858,7 +858,7 @@ class BloopConverter(parameters: BloopParameters) {
     }
 
     // Need to namespace only those projects that can run bloop. Others would not cause collision.
-    val allProjects = getAllBloopCapableProjects(project.getRootProject())
+    val allProjects = buildProjectsInfo.allBloopProjects
     val projectsWithSameName = allProjects.filter(_.getName == project.getName)
 
     val uniqueProjectName =
@@ -1282,12 +1282,6 @@ class BloopConverter(parameters: BloopParameters) {
 
   private def splitFlags(values: List[String]): List[String] = {
     values.flatMap(value => value.split(argumentSpaceSeparator))
-  }
-
-  private def getAllBloopCapableProjects(
-      rootProject: Project
-  ): List[Project] = {
-    rootProject.getAllprojects().asScala.filter(PluginUtils.canRunBloop).toList
   }
 }
 
